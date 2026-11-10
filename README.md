@@ -29,6 +29,10 @@ around limits like that, so I asked: what's stopping me from making my own way?
 - **Nightly "sleep."** It profiles which experts my real code uses, shrinks the rarely used ones to 2-bit, and learns
   from its own passed work. Shrinking the 122B this way cost only +0.66% loss on held-out code.
 
+## Progress
+**[PROGRESS.md](PROGRESS.md)**: the full build history: what I tried, what worked, what didn't, the fixes, and what's
+still in progress.
+
 ## Results so far
 Live numbers and what's running right now: **[nightguard-labs.github.io](https://nightguard-labs.github.io)**.
 How the design came together: **[How I figure things out](https://nightguard-labs.github.io/how.html)**.
@@ -36,3 +40,5 @@ How the design came together: **[How I figure things out](https://nightguard-lab
 ## Built with
 Swift · Metal · [MLX](https://github.com/ml-explore/mlx) / [mlx-swift](https://github.com/ml-explore/mlx-swift) ·
 [Qwen](https://huggingface.co/Qwen) models (Apache 2.0)
+
+Designed by me; built with [Claude Code](https://claude.com/claude-code) as my coding partner.
