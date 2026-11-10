@@ -147,6 +147,14 @@ so it never gets trained on.
 | 122B, shrunk | 1.43 tok/s | **4/4** · 435 s |
 | Qwen3-Next-80B (only a 5.7 GB cache) | **2.07 tok/s** | 3/4 · **174 s** |
 
+> **⚡ Wow moment: 7 hours → 11 minutes.** On the first try at task 5 (groupsum), the program was actually correct after
+> about an hour, but the model's own checks pointed at the wrong folder (`../groupsum.py` instead of `groupsum.py`), so it
+> kept "fixing" working code for 7+ hours. That led to a new step I call **Se**: before giving directions, look at what's
+> actually right in front of you. Se also tracks how long a task is taking and what really changed in the code each round.
+> I paused the exam, put Se in, and restarted task 5 fresh: **solved on the first loop in 11 minutes**, hidden tests passed.
+> One task isn't proof (answers vary run to run), and tasks 1–4 ran before the change, so the full before/after rerun
+> is the real test.
+
 **Full 12-task exam, shrunk 122B (in progress):** fizzbuzz ✅ 20 min · tempconv ✅ 28 min · jsonsum ⚠️ false win 113 min · brackets ✅ 18 min · groupsum ✅ 11 min · calc running…
 
 ## 10. The speed problem, and the stack
