@@ -1,15 +1,10 @@
-<p><a href="README.md">🏠 Home</a> · <b>🧭 How I learned</b> · <a href="PROGRESS.md">📈 Progress</a> · <a href="ARCHITECTURE.md">🔧 Architecture</a> · <a href="HOW-ITS-BUILT.md">🤝 How it's built</a> · <a href="../../discussions">💬 Discussions</a></p>
-
-# How I learned: two months from zero
-
-*⏱ 8-minute read*
 
 <!-- toc:start -->
 > **In short:** Two months from zero: I got this Mac in September 2026 with no programming or AI background. Every entry is something I built, broke or figured out, and the rule I made from it.
 
 **Contents**
 - [How I learn](#how-i-learn): Five habits: find the real cause, turn mistakes into rules, demand proof, measure, write it down.
-- [The log](#the-log): 14 dated entries:
+- [The log](#the-log): 15 dated entries:
   - [Sep 2026 · Built: Day one: local models and my first assistant](#sep-2026--built-day-one-local-models-and-my-first-assistant): Local models + an assistant with a hard wall around risky actions.
   - [Sep 2026 · Built: A canary to catch poisoned web pages](#sep-2026--built-a-canary-to-catch-poisoned-web-pages): A small outside model screens every web page first.
   - [Sep 2026 · Mess-up: My AI took down its own server](#sep-2026--mess-up-my-ai-took-down-its-own-server): It "fixed" the wrong thing and crashed the server.
@@ -24,7 +19,10 @@
   - [Nov 2026 · Mess-up: A feature I didn't actually want](#nov-2026--mess-up-a-feature-i-didnt-actually-want): Decide what you want before building.
   - [Nov 2026 · Figured out: Learning only what's been tested](#nov-2026--figured-out-learning-only-whats-been-tested): Only proven skills get saved.
   - [Nov 2026 · Built: Code Smash TeTi begins](#nov-2026--built-code-smash-teti-begins): Every lesson above shaped it.
+  - [Nov 2026 · Figured out: Working with limited space](#nov-2026--figured-out-working-with-limited-space): A 460 GB drive, 40–64 GB models, and rules for what can go.
 <!-- toc:end -->
+
+# How I learned: two months from zero
 
 I got this Mac in September 2026 with no programming or AI background. This is the honest record of how I learned: what I tried, what broke, why it broke, and the rule I made so it wouldn't happen again. I design and decide; an AI coding agent (Claude Code) writes the code; I learn how each piece works as we go.
 
@@ -134,8 +132,15 @@ Everything above fed into my main project: a layered coding brain that runs a 12
 
 > **Lesson:** The full build history is on the progress page.
 
----
-*Full build history of the main project: [PROGRESS.md](PROGRESS.md) · who does what: [HOW-ITS-BUILT.md](HOW-ITS-BUILT.md)*
+### Nov 2026 · Figured out: Working with limited space
+
+RAM isn't the only wall. My Mac's drive is 460 GB, and every big model takes a huge bite: 64 GB for the 122B, 51 GB for the shrunk version, 42 GB for the 80B, 19 GB for the 35B. Downloading a model, converting it for my engine and testing both copies can need double the space for a while. Some nights I was down to about 50 GB free.
+
+So I made rules. A model's original download only gets deleted after the converted copy is checked byte for byte and actually loads. New and experimental models go on an external SSD. Anything in use by a running test is never moved or deleted. And after the night an agent wiped my models, nothing gets deleted without a list of exactly what's going.
+
+Then I wanted to contribute numbers from my 32 GB Mac to another builder's project, and their test needed a 110 GB model. The answer wasn't to delete my work. It was to move one model to the external SSD for a while, clear real leftovers, and keep the test on the internal drive so the speed number stays honest.
+
+> **Lesson:** Limits force you to be deliberate. Running out of room taught me the same thing running out of RAM did: know exactly what you have, what depends on it, and what can safely go.
 
 ---
-<p><b>Next →</b> <a href="PROGRESS.md">📈 Progress</a> (10 min) · <a href="README.md">🏠 back to Home</a> · <a href="../../discussions">💬 questions? Discussions</a></p>
+*Full build history of the main project: [PROGRESS.md](PROGRESS.md) · who does what: [HOW-ITS-BUILT.md](HOW-ITS-BUILT.md)*

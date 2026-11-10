@@ -100,7 +100,7 @@ Two months from zero: I got this Mac in September 2026 with no programming or AI
 <details><summary>Sections</summary>
 
 - [How I learn](LEARNING.md#how-i-learn): Five habits: find the real cause, turn mistakes into rules, demand proof, measure, write it down.
-- [The log](LEARNING.md#the-log): 14 dated entries:
+- [The log](LEARNING.md#the-log): 15 dated entries:
   - [Sep 2026 · Built: Day one: local models and my first assistant](LEARNING.md#sep-2026--built-day-one-local-models-and-my-first-assistant): Local models + an assistant with a hard wall around risky actions.
   - [Sep 2026 · Built: A canary to catch poisoned web pages](LEARNING.md#sep-2026--built-a-canary-to-catch-poisoned-web-pages): A small outside model screens every web page first.
   - [Sep 2026 · Mess-up: My AI took down its own server](LEARNING.md#sep-2026--mess-up-my-ai-took-down-its-own-server): It "fixed" the wrong thing and crashed the server.
@@ -115,6 +115,7 @@ Two months from zero: I got this Mac in September 2026 with no programming or AI
   - [Nov 2026 · Mess-up: A feature I didn't actually want](LEARNING.md#nov-2026--mess-up-a-feature-i-didnt-actually-want): Decide what you want before building.
   - [Nov 2026 · Figured out: Learning only what's been tested](LEARNING.md#nov-2026--figured-out-learning-only-whats-been-tested): Only proven skills get saved.
   - [Nov 2026 · Built: Code Smash TeTi begins](LEARNING.md#nov-2026--built-code-smash-teti-begins): Every lesson above shaped it.
+  - [Nov 2026 · Figured out: Working with limited space](LEARNING.md#nov-2026--figured-out-working-with-limited-space): A 460 GB drive, 40–64 GB models, and rules for what can go.
 
 </details>
 
