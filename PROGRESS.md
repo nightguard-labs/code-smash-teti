@@ -3,7 +3,10 @@
 This is the honest build history of Code Smash TeTi: the dead ends, the fixes, and the numbers, in the order they
 happened. All measurements are from one 2021 MacBook Pro 16" (M1 Pro, 32 GB unified memory, internal NVMe SSD).
 
-**Where it stands (Nov 10, 2026):** the 122B runs, streamed from the SSD, at about 1.5 tok/s, and solves real tasks.
+**The goal:** a step-up layered coding brain that's usable on 32 GB: quick answers in seconds, small tasks under
+10 minutes, the slow giants only when needed.
+
+**Where it stands (Nov 10, 2026):** all four layers run. The 122B (the deepest layer) runs at about 1.5 tok/s and solves real tasks.
 A second streamed brain (Qwen3-Next-80B) is about 3× faster at the same coding score. The four-layer stack is built
 but not yet tested end to end. The 12-task exam is running now. **Not at the finish line yet.**
 
