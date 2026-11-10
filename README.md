@@ -15,13 +15,27 @@ streamed from the SSD. Native Swift + Metal, built on [MLX](https://github.com/m
 <a href="https://nightguard-labs.github.io">🌐 Live build log</a>
 </p>
 
+![Apple Silicon](https://img.shields.io/badge/Apple_Silicon-M1_Pro_·_32_GB-555?logo=apple)
+![Swift](https://img.shields.io/badge/Swift-Metal-F05138?logo=swift&logoColor=white)
+![Status](https://img.shields.io/badge/status-in_testing-orange)
+![License](https://img.shields.io/badge/license-Apache_2.0-blue)
+
 ```mermaid
 flowchart LR
-  T([A task]) --> L1["⚡ L1 · 9B<br/>quick tasks"]
-  L1 -- "fails its checks" --> L2["🧠 L2 · 35B<br/>everyday coding"]
-  L2 -- "fails" --> L3["🦾 L3 · 80B<br/>hard tasks"]
-  L3 -- "fails" --> L4["🐘 L4 · 122B<br/>last resort"]
+  T([A task]) --> L1["⚡ L1 · 9B<br/>quick tasks<br/>15–33 tok/s"]
+  L1 -- "fails its checks" --> L2["🧠 L2 · 35B<br/>everyday coding<br/>~53 tok/s"]
+  L2 -- "fails" --> L3["🦾 L3 · 80B<br/>hard tasks<br/>~2.1 tok/s"]
+  L3 -- "fails" --> L4["🐘 L4 · 122B<br/>last resort<br/>~1.5 tok/s"]
+  classDef ram fill:#d8f0dc,stroke:#3a8a4a,color:#123
+  classDef ssd fill:#fbe3cc,stroke:#c46a1a,color:#321
+  class L1,L2 ram
+  class L3,L4 ssd
 ```
+<sub>🟩 fits in RAM · 🟧 too big for RAM, streamed from the SSD</sub>
+
+| 🧠 Brain size vs RAM | ✅ Same answers as fully loaded | 🧪 Graded by | ⚡ Swift engine |
+|:---:|:---:|:---:|:---:|
+| **64 GB** model on a **32 GB** Mac | **0.00000** difference | **hidden tests** it never sees | **2×** faster on the 9B |
 
 | 🧩 The problem | ⚡ The idea | 📏 The goal |
 |---|---|---|
