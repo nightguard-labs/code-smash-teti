@@ -162,4 +162,4 @@ improves itself overnight · trimmed to fit 32 GB. The code goes public when it 
 5. **Correct isn't the same as usable.** A 40-minute answer pushed the design toward layers.
 
 ---
-*Designed by me; built with [Claude Code](https://claude.com/claude-code) as my coding partner.*
+*Designed by me; built with [Claude Code](https://claude.com/claude-code) as my coding partner. See [How this is built](HOW-ITS-BUILT.md).*

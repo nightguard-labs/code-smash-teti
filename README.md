@@ -41,4 +41,4 @@ How the design came together: **[How I figure things out](https://nightguard-lab
 Swift · Metal · [MLX](https://github.com/ml-explore/mlx) / [mlx-swift](https://github.com/ml-explore/mlx-swift) ·
 [Qwen](https://huggingface.co/Qwen) models (Apache 2.0)
 
-Designed by me; built with [Claude Code](https://claude.com/claude-code) as my coding partner.
+Designed by me; built with [Claude Code](https://claude.com/claude-code) as my coding partner. **[How this is built](HOW-ITS-BUILT.md)** explains who does what.
