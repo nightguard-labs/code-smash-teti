@@ -155,7 +155,7 @@ so it never gets trained on.
 > One task isn't proof (answers vary run to run), and tasks 1–4 ran before the change, so the full before/after rerun
 > is the real test.
 
-**Full 12-task exam, shrunk 122B (in progress):** fizzbuzz ✅ 20 min · tempconv ✅ 28 min · jsonsum ⚠️ false win 113 min · brackets ✅ 18 min · groupsum ✅ 11 min · calc ⚠️ false win 32 min · fix-stats ✅ 16 min · fix-queue ✅ 17 min · todo-feature ✅ 139 min · lru running…
+**Full 12-task exam, shrunk 122B (in progress):** fizzbuzz ✅ 20 min · tempconv ✅ 28 min · jsonsum ⚠️ false win 113 min · brackets ✅ 18 min · groupsum ✅ 11 min · calc ⚠️ false win 32 min · fix-stats ✅ 16 min · fix-queue ✅ 17 min · todo-feature ✅ 139 min · lru ✅ 115 min
 
 ## 10. The speed problem, and the stack
 A small task was taking around **40 minutes** on the 122B. Correct, but not usable. So I added speed to the finish line
