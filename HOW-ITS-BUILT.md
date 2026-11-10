@@ -1,4 +1,19 @@
+<p><a href="README.md">🏠 Home</a> · <a href="LEARNING.md">🧭 How I learned</a> · <a href="PROGRESS.md">📈 Progress</a> · <a href="ARCHITECTURE.md">🔧 Architecture</a> · <b>🤝 How it's built</b> · <a href="../../discussions">💬 Discussions</a></p>
+
 # How this is built: me and Claude Code
+
+*⏱ 4-minute read*
+
+<!-- toc:start -->
+> **In short:** Who does what, stated plainly: I design the system, make the calls and judge the results; Claude Code, an AI coding agent, writes the code and runs the experiments.
+
+**Contents**
+- [What I do](#what-i-do): Goal and limits, the architecture, the calls, the finish line, judging results.
+- [What Claude Code does](#what-claude-code-does): Turns the design into engineering, writes the code, runs and debugs experiments.
+- [How I keep it honest](#how-i-keep-it-honest): Real numbers only, hidden tests, verify before trusting.
+- [Where I started](#where-i-started): September 2026, from zero; learning as I go.
+- [Why build this way](#why-build-this-way): Building at the level I can design, while staying the one who decides.
+<!-- toc:end -->
 
 I want to be upfront about how this project gets made, because it matters for judging it fairly.
 
@@ -52,3 +67,6 @@ I understand more of it every week, and I can explain why each part is built the
 I can see how a system should fit together, but I'm not a trained programmer. An AI coding agent lets me build at the
 level I can design, as long as I stay the one deciding and checking, and learn the whole way through. This project is
 me finding out what that partnership can do, out in the open.
+
+---
+<p><b>Next →</b> <a href="LEARNING.md">🧭 How I learned</a> (8 min) · <a href="README.md">🏠 back to Home</a> · <a href="../../discussions">💬 questions? Discussions</a></p>

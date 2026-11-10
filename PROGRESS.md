@@ -1,4 +1,29 @@
+<p><a href="README.md">🏠 Home</a> · <a href="LEARNING.md">🧭 How I learned</a> · <b>📈 Progress</b> · <a href="ARCHITECTURE.md">🔧 Architecture</a> · <a href="HOW-ITS-BUILT.md">🤝 How it's built</a> · <a href="../../discussions">💬 Discussions</a></p>
+
 # Progress: what I tried, what worked, what didn't
+
+*⏱ 10-minute read*
+
+<!-- toc:start -->
+> **In short:** The build history in order: what I tried, what worked, what didn't, and how each problem got fixed, with the real numbers. Ends with the to-do list and the lessons so far.
+
+**Contents**
+- [1. Before this project: low-bit models can't code](#1-before-this-project-low-bit-models-cant-code): A 2-bit model couldn't code, so coding experts stay at 3–4 bit.
+- [2. Picking the base model](#2-picking-the-base-model): Why Qwen3.5-122B-A10B, and the problem: 64 GB on a 32 GB Mac.
+- [3. Measuring the hardware before building on it](#3-measuring-the-hardware-before-building-on-it): SSD speeds first; the hit-rate math set the whole design.
+- [4. The engine: all native Swift + Metal](#4-the-engine-all-native-swift--metal): Relay lanes, the disk layout, and streaming that matched the original exactly.
+  - [The SSD relay](#the-ssd-relay): 1 → 12 lanes measured; 8 chosen.
+  - [Laying the model out on disk](#laying-the-model-out-on-disk): One expert = one direct read, verified byte for byte.
+  - [Streaming the experts](#streaming-the-experts): 0.00000 difference vs the in-RAM layer; a self-sizing cache.
+- [5. First brain live (Nov 5)](#5-first-brain-live-nov-5): The 122B ran at ~3 tok/s; my own speculative decoding added 24%.
+- [6. The thinking loop](#6-the-thinking-loop): Te/Ti solved real tasks; a broken check and a repeated mistake, both fixed.
+- [7. Bugs that taught me something](#7-bugs-that-taught-me-something): A deadlock freeze, a collapsing cache, and exam leakage, all fixed.
+- [8. Shrinking: the plan changed](#8-shrinking-the-plan-changed): Only 11% could be cut, so rare experts went to 2-bit: +0.66% loss, but not faster yet.
+- [9. A fair exam](#9-a-fair-exam): 12 hidden-test tasks; the 80B matched the 122B at ~3× the speed.
+- [10. The speed problem, and the stack](#10-the-speed-problem-and-the-stack): 40-minute tasks led to the four-layer stack; Swift doubled the 9B.
+- [Still working on](#still-working-on): The open checklist.
+- [Lessons so far](#lessons-so-far): Five takeaways.
+<!-- toc:end -->
 
 This is the honest build history of Code Smash TeTi: the dead ends, the fixes, and the numbers, in the order they
 happened. All measurements are from one 2021 MacBook Pro 16" (M1 Pro, 32 GB unified memory, internal NVMe SSD).
@@ -166,3 +191,6 @@ improves itself overnight · trimmed to fit 32 GB. The code goes public when it 
 
 ---
 *Designed by me; built with [Claude Code](https://claude.com/claude-code) as my coding partner. See [How this is built](HOW-ITS-BUILT.md).*
+
+---
+<p><b>Next →</b> <a href="ARCHITECTURE.md">🔧 Architecture</a> (20 min) · <a href="README.md">🏠 back to Home</a> · <a href="../../discussions">💬 questions? Discussions</a></p>

@@ -1,4 +1,29 @@
+<p><a href="README.md">🏠 Home</a> · <a href="LEARNING.md">🧭 How I learned</a> · <a href="PROGRESS.md">📈 Progress</a> · <b>🔧 Architecture</b> · <a href="HOW-ITS-BUILT.md">🤝 How it's built</a> · <a href="../../discussions">💬 Discussions</a></p>
+
 # Architecture: how every piece fits together
+
+*⏱ 20-minute read*
+
+<!-- toc:start -->
+> **In short:** How every piece fits together, in enough detail to rebuild it: the four-layer stack, the Swift servers and their ports, the one-way lanes and two relays that stream experts from the SSD, the three routers, the files on disk, memory management, the thinking loop and overnight sleep.
+
+**Contents**
+- [1. The big picture](#1-the-big-picture): One diagram: a task climbs 9B → 35B → 80B → 122B; the top two stream from the SSD through two relays.
+- [2. The machine it's built for](#2-the-machine-its-built-for): M1 Pro, 32 GB, measured SSD speeds, and the math showing the RAM cache hit rate decides speed.
+- [3. Before and after the Swift conversion](#3-before-and-after-the-swift-conversion): Every piece, before vs after going all-Swift; the 9B went 15.5 → 32.5 tok/s (with caveats).
+- [4. The programs](#4-the-programs): 4 shared libraries and 8 programs: server, thinking loop, front desk, layout, shrink, sleep, tests.
+- [5. Servers, ports and connections](#5-servers-ports-and-connections): Every port and socket, why each layer gets its own server, and the 4-byte-length + JSON wire format.
+- [6. One-way routing: lanes and relays](#6-one-way-routing-lanes-and-relays): One-way request and data lanes, a file handle per lane, least-resistance routing; 8 lanes = 8.5 GB/s.
+- [7. The three routers](#7-the-three-routers): The model's expert router (with prefetch), the stack router between layers, and the front desk.
+- [8. What happens for one word](#8-what-happens-for-one-word): 48 layers, cache hit vs SSD miss, draft-model guessing (+24%), and prompt memory.
+- [9. The brain on disk](#9-the-brain-on-disk): hot weights 3.2 GB in RAM, 61 GB expert bank in 16 KB-aligned blocks, index files, deep memory.
+- [10. Memory: RAM is conscious, SSD is subconscious](#10-memory-ram-is-conscious-ssd-is-subconscious): How the expert cache sizes, fills, evicts and survives memory pressure without freezing.
+- [11. The thinking loop](#11-the-thinking-loop): Te defines done, Ti builds, Ne tries new paths; memory, points, sandbox and the hidden exam.
+- [12. Sleep: overnight maintenance](#12-sleep-overnight-maintenance): 7 phases: clean up memory, repair, practice, train only if it helps, shrink, report.
+- [13. Settings](#13-settings): The 6 switches: cache size, prefetch, draft model, usage counting, 2-bit conversion.
+- [14. Rebuild it step by step](#14-rebuild-it-step-by-step): 10 commands from build to serving, tasks, the full stack, shrinking and measuring.
+- [15. Known gaps](#15-known-gaps): What isn't done or proven yet, stated plainly.
+<!-- toc:end -->
 
 This is the full technical walkthrough of how Code Smash TeTi is set up: every program, server, port, connection, file
 and setting, and why each one is the way it is. It's written so someone else could rebuild the same setup. For the
@@ -6,22 +31,6 @@ story of how it got here, see [PROGRESS.md](PROGRESS.md). For who does what, see
 
 > The code is published when the project reaches its finish line. The commands below are the ones that will ship.
 
-**Contents**
-1. [The big picture](#1-the-big-picture)
-2. [The machine it's built for](#2-the-machine-its-built-for)
-3. [Before and after the Swift conversion](#3-before-and-after-the-swift-conversion)
-4. [The programs](#4-the-programs)
-5. [Servers, ports and connections](#5-servers-ports-and-connections)
-6. [One-way routing: lanes and relays](#6-one-way-routing-lanes-and-relays)
-7. [The three routers](#7-the-three-routers)
-8. [What happens for one word](#8-what-happens-for-one-word)
-9. [The brain on disk](#9-the-brain-on-disk)
-10. [Memory: RAM is conscious, SSD is subconscious](#10-memory-ram-is-conscious-ssd-is-subconscious)
-11. [The thinking loop](#11-the-thinking-loop)
-12. [Sleep: overnight maintenance](#12-sleep-overnight-maintenance)
-13. [Settings](#13-settings)
-14. [Rebuild it step by step](#14-rebuild-it-step-by-step)
-15. [Known gaps](#15-known-gaps)
 
 ---
 
@@ -431,3 +440,6 @@ Honest list of what isn't done or isn't proven yet:
 - The Swift 4-bit 9B failed its one real task; unclear whether it's 4-bit, Swift, or luck.
 - Overnight training is proven on a small model, not yet at full scale on the 122B.
 - Apple's on-device model wasn't ready on this Mac yet, so the front desk uses its keyword router.
+
+---
+<p><b>Next →</b> <a href="HOW-ITS-BUILT.md">🤝 How it's built</a> (4 min) · <a href="README.md">🏠 back to Home</a> · <a href="../../discussions">💬 questions? Discussions</a></p>
