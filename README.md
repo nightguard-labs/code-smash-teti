@@ -33,9 +33,9 @@ flowchart LR
 ```
 <sub>🟩 fits in RAM · 🟧 too big for RAM, streamed from the SSD</sub>
 
-| 🧠 Brain size vs RAM | ✅ Same answers as fully loaded | 🧪 Graded by | ⚡ Swift engine |
+| 🧠 Brain size vs RAM | ✅ Same answers as fully loaded | 🧪 Graded by | ⚡ Guess-ahead decoding |
 |:---:|:---:|:---:|:---:|
-| **64 GB** model on a **32 GB** Mac | **0.00000** difference | **hidden tests** it never sees | **2×** faster on the 9B |
+| **64 GB** model on a **32 GB** Mac | **0.00000** difference | **hidden tests** it never sees | **+24%** on the 122B |
 
 | 🧩 The problem | ⚡ The idea | 📏 The goal |
 |---|---|---|
