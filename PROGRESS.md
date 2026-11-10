@@ -147,7 +147,7 @@ so it never gets trained on.
 | 122B, shrunk | 1.43 tok/s | **4/4** · 435 s |
 | Qwen3-Next-80B (only a 5.7 GB cache) | **2.07 tok/s** | 3/4 · **174 s** |
 
-**Full 12-task exam, shrunk 122B (in progress):** fizzbuzz ✅ 20 min · tempconv ✅ 28 min · jsonsum ⚠️ false win 113 min · brackets ✅ 18 min · groupsum running…
+**Full 12-task exam, shrunk 122B (in progress):** fizzbuzz ✅ 20 min · tempconv ✅ 28 min · jsonsum ⚠️ false win 113 min · brackets ✅ 18 min · groupsum ✅ 11 min · calc running…
 
 ## 10. The speed problem, and the stack
 A small task was taking around **40 minutes** on the 122B. Correct, but not usable. So I added speed to the finish line
