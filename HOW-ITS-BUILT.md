@@ -39,7 +39,16 @@ to a standard I can check.
 - **Verify before trusting.** Conversions and layouts are checked byte for byte or to an exact numeric match before
   they're used. When Claude says something works, it has to show the test.
 
+## Where I started
+I got this Mac in **September 2026** and started from nothing: no programming background, no AI experience. The same
+day I installed Claude Code and started my first local AI project. Two months later, this is where it's at.
+
+I'm learning as I go, and a lot. Every bug, failed test and design change on the [progress page](PROGRESS.md) is also
+something I learned: how mixture-of-experts models route work, why SSD read speed and cache hit rate decide everything,
+what quantization does to precision, why a model can't be trusted to grade itself. I may not write the code by hand, but
+I understand more of it every week, and I can explain why each part is built the way it is.
+
 ## Why build this way
 I can see how a system should fit together, but I'm not a trained programmer. An AI coding agent lets me build at the
-level I can design, as long as I stay the one deciding and checking. This project is me learning what that partnership
-can do, out in the open.
+level I can design, as long as I stay the one deciding and checking, and learn the whole way through. This project is
+me finding out what that partnership can do, out in the open.
