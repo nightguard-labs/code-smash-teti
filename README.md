@@ -145,12 +145,39 @@ slow giants used only when a problem really needs them. That's what the step-up 
   stream in through 8 parallel SSD lanes, plus a separate relay so rarely used experts never block common ones.
 - **A self-checking build loop.** One part defines what "done" means as concrete checks, another builds until the
   checks pass. Hidden tests grade the real result, so the model can't grade its own homework.
-- **Nightly "sleep."** It profiles which experts my real code uses, shrinks the rarely used ones to 2-bit, and learns
-  from its own passed work. Shrinking the 122B this way cost only +0.66% loss on held-out code.
+- **Nightly "sleep" (partly built).** It profiles which experts my real code uses and shrinks the rarely used ones to
+  2-bit: on the 122B that cost only +0.66% loss on held-out code. Learning from its own passed work overnight is
+  designed but not running yet.
 
 ## Results so far
 Live numbers and what's running right now: **[nightguard-labs.github.io](https://nightguard-labs.github.io)**.
 How the design came together: **[How I figure things out](https://nightguard-labs.github.io/how.html)**.
+
+## Related work
+Running models bigger than RAM by streaming weights from flash storage is **not my invention**. Other people got
+there first, and their work shows the idea is solid:
+
+- **Apple, "LLM in a Flash" (Dec 2023):** the research paper that proposed running models larger than memory by
+  reading weights from flash. [arXiv:2312.11514](https://arxiv.org/abs/2312.11514)
+- **Mixtral offloading (Eliseev & Mazur, Dec 2023):** keeping MoE experts off the GPU with a cache and loading
+  them on demand. [arXiv:2312.17238](https://arxiv.org/abs/2312.17238)
+- **Flash-MoE (Dan Woods, 2026):** a C/Metal engine that streams Qwen3.5-397B experts from the SSD on a 48 GB
+  MacBook Pro. Also built with Claude Code. [Write-up by Simon Willison](https://simonwillison.net/2026/Mar/24/streaming-experts/)
+- **Slotstream, [MLX-Flash](https://github.com/szibis/MLX-Flash) and mac-code:** other open-source engines that
+  stream MoE experts from a Mac's SSD.
+
+I found these after I'd already built my own version, which was reassuring: I'd worked out the same core idea on
+my own. **What this project adds** is everything around the streaming:
+
+1. **32 GB instead of 48+.** Most of the projects above target bigger Macs.
+2. **Usable, not just runnable.** The goal is a coding assistant judged by real tasks finished, not a
+   tokens-per-second demo.
+3. **A step-up stack** (9B → 35B → 80B → 122B) so the slow giants only see the problems smaller models can't solve.
+4. **A self-checking build loop with hidden-test exams** that counts false wins: times the model said "done"
+   and wasn't.
+5. **Mixed precision by real usage:** rarely used experts shrunk to 2-bit, based on profiling my own code.
+
+If I've missed a project that should be here, please open a discussion and I'll add it.
 
 ## Built with
 Swift · Metal · [MLX](https://github.com/ml-explore/mlx) / [mlx-swift](https://github.com/ml-explore/mlx-swift) ·
