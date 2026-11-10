@@ -144,6 +144,11 @@ Getting a 122B model (64 GB at 4-bit) to run on it was step one. It works, but a
 The real goal is a system that's **usable**: quick questions in seconds, small tasks in under 10 minutes, and the
 slow giants used only when a problem really needs them. That's what the step-up layers are for.
 
+And there's a bigger reason. Most people can't just buy a bigger computer to keep up with AI: a student on a
+hand-me-down laptop, someone who can't add another monthly subscription, anyone who'd rather their code and ideas
+never leave their own desk. If a 32 GB Mac can do this, then the computer you already have might be **enough**.
+That's the future I'm building toward: capable AI that belongs to the person using it.
+
 ## How it works
 - **A four-layer step-up stack.** Every task starts at the bottom and climbs a layer only when it fails its checks:
 
