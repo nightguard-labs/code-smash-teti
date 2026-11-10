@@ -32,6 +32,7 @@ around limits like that, so I asked: what's stopping me from making my own way?
 ## Progress
 **[PROGRESS.md](PROGRESS.md)**: the full build history: what I tried, what worked, what didn't, the fixes, and what's
 still in progress.
+**[LEARNING.md](LEARNING.md)**: how I learned, two months from zero: my mess-ups and the lessons from each.
 
 ## Results so far
 Live numbers and what's running right now: **[nightguard-labs.github.io](https://nightguard-labs.github.io)**.
