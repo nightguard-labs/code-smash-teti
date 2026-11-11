@@ -1,0 +1,4 @@
+The file stats.py in this folder has bugs. Running python3 stats.py <numbers...> should print three lines: 'mean M',
+'median D' and 'mode X', where M and D are rounded to 2 decimal places (always two decimals) and X is the most common
+value (if several are equally common, the smallest of them), printed as given (as an integer if it is a whole number).
+With no numbers it should print an error to stderr and exit 1. Find and fix the bugs; keep the same file and output format.

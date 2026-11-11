@@ -21,7 +21,7 @@ streamed from the SSD. Native Swift + Metal, built on [MLX](https://github.com/m
 ![License](https://img.shields.io/badge/license-Apache_2.0-blue)
 
 > [!TIP]
-> **The code isn't public yet: it goes up once the brain passes its exam on the final loop.** ⭐ **Star** this repo, or click **Watch → Custom → Releases**, to get notified the day it drops. Until then, follow along on the [live build log](https://nightguard-labs.github.io) or the [latest update](../../discussions/2).
+> **The code is public.** The brain passed its finish line on a clean run: **11 of 12** hidden-test tasks, **zero false wins**. Build it on your own Mac with [BUILD.md](BUILD.md). The engine and thinking loop are in [`brain/`](brain), and the exam is in [`exams/`](exams). ⭐ Star or 👁 watch for `setup.sh` and `bench.sh`, which are coming next.
 
 ```mermaid
 flowchart LR
@@ -44,8 +44,10 @@ flowchart LR
 |---|---|---|
 | The 122B is **64 GB**. The Mac has **32 GB** and can't be upgraded. | Stream the big models from the SSD, and put fast small models in front so most tasks never need them. | **Usable:** quick answers in seconds, small tasks **under 10 minutes**. (It started at ~40.) |
 
-> 🚧 **Code coming soon.** It goes public when it reaches the finish line: 10 of 12 on a hidden-test exam with zero
-> false wins, and small tasks done in under 10 minutes. ⭐ Star or 👁 watch to follow along.
+> ✅ **Finish line reached:** 10 of 12 on a hidden-test exam with zero false wins, and small tasks done in under 10 minutes.
+> The 35B layer scored **11/12 with zero false wins** on a clean run, most tasks in 1–8 minutes. [Build it yourself →](BUILD.md)
+
+![Exam chart: 35B vs 122B, same 12 tasks](docs/exam-chart-clean.png)
 
 <!-- toc:start -->
 ## Table of contents

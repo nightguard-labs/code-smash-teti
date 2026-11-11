@@ -1,0 +1,7 @@
+Create a Swift package in this folder named TextStats (swift-tools-version 5.9) with two targets: a library target
+TextStatsCore and an executable target textstats that depends on it. The library exposes a public function
+stats(_ text: String) -> (lines: Int, words: Int, chars: Int, longest: String) where lines counts newline-separated lines
+(a trailing newline does not start a new line; empty text has 0 lines), words are runs of non-whitespace, chars counts
+Characters, and longest is the longest word (the first one if tied, "" if none). The executable reads standard input and
+prints 'lines L', 'words W', 'chars C', 'longest X' on four lines. `swift build` must succeed and
+`swift run -q textstats < file` must work.

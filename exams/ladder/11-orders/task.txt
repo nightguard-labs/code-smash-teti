@@ -1,0 +1,6 @@
+Write a Swift command-line script orders.swift run as: swift orders.swift <orders.json>. The file is a JSON array of
+orders like {"id": 1, "customer": "Ann", "items": [{"name": "pen", "price": 1.5, "qty": 4}]}. Use Codable to decode it.
+Print one line per customer: 'customer: total' where total is the sum of price*qty over all their orders, with exactly 2
+decimal places, sorted by total descending, ties broken by customer name. Then print a final line 'TOTAL: grand' with the
+grand total. Orders with an empty items list still count (total 0.00). If the file is missing or not valid JSON for this
+shape, print an error to stderr and exit with code 1.

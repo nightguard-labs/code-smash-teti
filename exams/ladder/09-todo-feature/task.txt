@@ -1,0 +1,5 @@
+todo.py in this folder is a small to-do list tool that stores tasks in todo.json (in the current folder). It supports
+'python3 todo.py add <text>' and 'python3 todo.py list'. Add two commands without breaking the existing ones:
+'python3 todo.py done <N>' marks task number N (as shown by list, 1-based) as done, and list must then show it as
+'N. [x] text' instead of 'N. [ ] text'; 'python3 todo.py remove <N>' deletes task N, and later tasks are renumbered.
+An invalid N (not a number, or out of range) prints an error to stderr, exits with code 1, and changes nothing.

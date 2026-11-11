@@ -1,0 +1,8 @@
+Queue.swift in this folder defines a generic first-in-first-out queue, and main.swift uses it. The code doesn't compile,
+and it also has a logic bug. Fix both so that `swiftc Queue.swift main.swift -o queue && ./queue` prints exactly:
+dequeued 1
+dequeued 2
+count 1
+peek 3
+empty false
+Keep the Queue API (enqueue, dequeue, peek, count, isEmpty). dequeue() and peek() must return nil on an empty queue.

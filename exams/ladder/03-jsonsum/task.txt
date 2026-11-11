@@ -1,0 +1,4 @@
+Write a Python script jsonsum.py run as: python3 jsonsum.py <file.json> <key>. The file holds any JSON (objects and lists
+nested to any depth). Print the sum of every numeric value stored under that key anywhere in the document, as an integer
+if the sum is a whole number, otherwise as a float. Booleans don't count as numbers. If the file can't be read or isn't
+valid JSON, print an error to stderr and exit with code 1. If the key never appears, print 0.

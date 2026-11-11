@@ -1,0 +1,9 @@
+.build/
+.swiftpm/
+memory/
+logs/
+projects/
+run/
+__pycache__/
+*.pyc
+.DS_Store

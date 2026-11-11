@@ -1,0 +1,5 @@
+Write a Swift command-line script brackets.swift that reads all of standard input and checks that the brackets (), [] and
+{} are balanced and properly nested. Ignore every other character. If they are balanced print OK and exit 0. Otherwise
+print 'ERROR at N' where N is the 1-based character position of the first bracket that is wrong (a closing bracket with
+no matching opener, or the wrong kind), or, if the input ends with brackets still open, the position of the earliest
+bracket that was never closed; then exit 1.

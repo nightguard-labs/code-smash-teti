@@ -1,0 +1,4 @@
+Write a Python module lru.py with a class LRUCache(capacity) that has get(key) and put(key, value). get returns the value,
+or -1 if the key is missing; using get counts as a use. put inserts or updates a key (an update also counts as a use);
+when the cache is over capacity it removes the least recently used key. Both operations must be O(1) on average (don't
+scan or sort all keys). Also give the class a __len__ returning the number of stored keys.

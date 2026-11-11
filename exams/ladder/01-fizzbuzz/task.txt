@@ -1,0 +1,3 @@
+Write a Python script fizzbuzz.py run as: python3 fizzbuzz.py N. Print the numbers 1 to N, one per line, but print Fizz for
+multiples of 3, Buzz for multiples of 5, and FizzBuzz for multiples of both. If N is missing or not a positive integer,
+print an error to stderr and exit with code 2.

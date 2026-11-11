@@ -1,0 +1,5 @@
+Write a Python script calc.py run as: python3 calc.py "<expression>". Evaluate an arithmetic expression with integers and
+decimals, + - * /, parentheses, unary minus, and normal precedence (* and / before + and -, left to right). Do NOT use
+eval or exec. Print the result; if it is a whole number print it without a decimal point, otherwise print it rounded to 6
+decimal places with trailing zeros removed. Division by zero or a malformed expression prints an error to stderr and
+exits with code 1.

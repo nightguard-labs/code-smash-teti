@@ -1,0 +1,4 @@
+Write a Swift command-line script tempconv.swift run as: swift tempconv.swift <value> <C|F>. If the unit is C, convert the
+Celsius value to Fahrenheit; if F, convert Fahrenheit to Celsius. Print only the result with exactly one decimal place
+(for example 98.6). Negative and decimal inputs must work. If the arguments are wrong (missing, not a number, or a unit
+other than C or F), print an error to stderr and exit with code 1.

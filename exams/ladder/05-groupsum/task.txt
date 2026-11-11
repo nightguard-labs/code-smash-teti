@@ -1,0 +1,5 @@
+Write a Python script groupsum.py run as: python3 groupsum.py <file.csv> <group-column> <value-column>. The CSV has a header
+row and may contain quoted fields with commas inside them (use proper CSV parsing). For each distinct value of the group
+column, sum the numeric value column. Print one line per group as 'group<TAB>total' with the total rounded to 2 decimal
+places (always two decimals), sorted by total from largest to smallest, ties broken alphabetically by group. Rows whose
+value is empty or not a number are skipped. If a column name is not in the header, print an error to stderr and exit 2.
