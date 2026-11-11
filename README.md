@@ -20,6 +20,9 @@ streamed from the SSD. Native Swift + Metal, built on [MLX](https://github.com/m
 ![Status](https://img.shields.io/badge/status-in_testing-orange)
 ![License](https://img.shields.io/badge/license-Apache_2.0-blue)
 
+> [!TIP]
+> **The code isn't public yet: it goes up once the brain passes its exam on the final loop.** ⭐ **Star** this repo, or click **Watch → Custom → Releases**, to get notified the day it drops. Until then, follow along on the [live build log](https://nightguard-labs.github.io) or the [latest update](../../discussions/2).
+
 ```mermaid
 flowchart LR
   T([A task]) --> L1["⚡ L1 · 9B<br/>quick tasks<br/>15–33 tok/s"]
