@@ -11,6 +11,7 @@ streamed from the SSD. Native Swift + Metal, built on [MLX](https://github.com/m
 <a href="PROGRESS.md">Progress</a> ·
 <a href="LEARNING.md">How I learned</a> ·
 <a href="HOW-ITS-BUILT.md">How it's built</a> ·
+<a href="TERMS.md">My names vs. real terms</a> ·
 <a href="../../discussions">💬 Discussions</a> ·
 <a href="https://nightguard-labs.github.io">🌐 Live build log</a>
 </p>
@@ -136,6 +137,9 @@ Who does what, stated plainly: I design the system, make the calls and judge the
 - [Why build this way](HOW-ITS-BUILT.md#why-build-this-way): Building at the level I can design, while staying the one who decides.
 
 </details>
+
+### 📚 [My names vs. real terms](TERMS.md) · 3 min
+I built it with my own names first (Ti, Te, Fi, Se, Ne). This page puts them next to the field terms (coder agent, test generator, LLM-as-judge, monitor, red team), plus the things I figured out and their real names.
 
 ### 💬 [Discussions](../../discussions)
 Questions, ideas and pushback. Start with the pinned post.
