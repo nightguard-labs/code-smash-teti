@@ -7,6 +7,7 @@ streamed from the SSD. Native Swift + Metal, built on [MLX](https://github.com/m
 <p>
 <b>📖 Docs:</b>
 <a href="#table-of-contents">Contents</a> ·
+<a href="LLM-OPTIMIZATION.md">LLM optimization</a> ·
 <a href="ARCHITECTURE.md">Architecture</a> ·
 <a href="PROGRESS.md">Progress</a> ·
 <a href="LEARNING.md">How I learned</a> ·
@@ -137,6 +138,9 @@ Who does what, stated plainly: I design the system, make the calls and judge the
 - [Why build this way](HOW-ITS-BUILT.md#why-build-this-way): Building at the level I can design, while staying the one who decides.
 
 </details>
+
+### ⚡ [LLM optimization: an order of operations](LLM-OPTIMIZATION.md) · 6 min
+How I make a small local model faster AND smarter than out of the box: 9 steps in order, cheapest win first, with the numbers I measured.
 
 ### 📚 [My names vs. real terms](TERMS.md) · 3 min
 I built it with my own names first (Ti, Te, Fi, Se, Ne). This page puts them next to the field terms (coder agent, test generator, LLM-as-judge, monitor, red team), plus the things I figured out and their real names.
