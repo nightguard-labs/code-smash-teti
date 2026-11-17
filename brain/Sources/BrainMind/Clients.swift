@@ -4,6 +4,16 @@ import BrainCore
 /// Anything that can think: the brain's own engine, or (for testing) another local model.
 public protocol ModelClient: Sendable {
     func complete(_ messages: [BrainMessage], maxTokens: Int, think: Bool) async throws -> String
+    /// n answers to the same prompt. Default: one after another. LocalChatClient asks a batching server for all n at once.
+    func completeMany(_ messages: [BrainMessage], n: Int, maxTokens: Int, think: Bool) async throws -> [String]
+}
+
+public extension ModelClient {
+    func completeMany(_ messages: [BrainMessage], n: Int, maxTokens: Int, think: Bool) async throws -> [String] {
+        var out: [String] = []
+        for _ in 0..<n { out.append(try await complete(messages, maxTokens: maxTokens, think: think)) }
+        return out
+    }
 }
 
 /// Talks to an Ollama-style /api/chat on this Mac (the brain-server edge speaks the same API).
@@ -27,6 +37,24 @@ public struct LocalChatClient: ModelClient {
         let obj = try JSONSerialization.jsonObject(with: data) as? [String: Any] ?? [:]
         if let e = obj["error"] { throw NSError(domain: "model", code: 1, userInfo: [NSLocalizedDescriptionKey: "\(e)"]) }
         return ((obj["message"] as? [String: Any])?["content"] as? String) ?? ""
+    }
+
+    /// 11/17 batched drafts: options.n asks plain_server_valves.py to read the prompt once and write n answers side by side.
+    /// A server that ignores n returns one answer; the rest are then asked one by one.
+    public func completeMany(_ messages: [BrainMessage], n: Int, maxTokens: Int, think: Bool) async throws -> [String] {
+        var req = URLRequest(url: URL(string: host + "/api/chat")!, timeoutInterval: 1800)
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.httpBody = try JSONSerialization.data(withJSONObject: [
+            "model": model, "stream": false, "think": think,
+            "messages": messages.map { ["role": $0.role.rawValue, "content": $0.content] },
+            "options": ["num_ctx": numCtx, "temperature": 0.3, "num_predict": maxTokens, "n": n]])
+        let (data, _) = try await URLSession.shared.data(for: req)
+        let obj = try JSONSerialization.jsonObject(with: data) as? [String: Any] ?? [:]
+        if let e = obj["error"] { throw NSError(domain: "model", code: 1, userInfo: [NSLocalizedDescriptionKey: "\(e)"]) }
+        var out = (obj["choices"] as? [String]) ?? [((obj["message"] as? [String: Any])?["content"] as? String) ?? ""]
+        while out.count < n { out.append(try await complete(messages, maxTokens: maxTokens, think: think)) }
+        return out
     }
 }
 

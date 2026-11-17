@@ -163,6 +163,13 @@ That can't meet the 9-minute rule, so it's **demoted to an overnight backup** (o
 that one is more RAM, not more cleverness. Next contender for the "bigger brain" slot: a 27B dense model that
 fits entirely in memory.
 
+## The small model (9B, 4-bit)
+
+On a 5 GB model the playbook flips: most speed tricks lost, and my full loop made it *worse* than out of the box.
+What worked was "the twins" (one fast answer, one checker, trust them when they agree): **7/8 with 0 false wins vs
+6/8 out of the box**, but ~7x slower so far. Full numbers, including everything that failed:
+[SMALL-MODEL-NIGHT.md](SMALL-MODEL-NIGHT.md)
+
 ## A bonus bug this found
 
 The brain server kept dying with no crash report. Cause: when a client hung up mid-answer, the next write to that

@@ -9,6 +9,7 @@ task's HIDDEN tests, which the brain never sees, decide the real result.
 
 Usage: python3 exams/run_ladder.py [--round NAME] [--only 01-fizzbuzz,...]
 """
+import shlex
 import glob, json, os, re, shutil, subprocess, sys, tempfile, time, urllib.request
 
 LAB = os.path.expanduser("~/local-ai/brain-lab")
@@ -48,7 +49,7 @@ def wait_ready():
             log("waiting: the shrink/prune work is using the RAM"); time.sleep(300); continue
         if sh(["pgrep", "-f", "release/teti solve"]).strip():
             log("waiting: another task is running"); time.sleep(120); continue
-        if not brain_up():
+        if not brain_up() and not os.environ.get("TETI_MODEL_ARGS"):   # another model = leave the big brain off (RAM)
             log("starting the brain")
             try:
                 req = urllib.request.Request("http://127.0.0.1:8790/api/start", b"{}", {"X-Panel": "1"})
@@ -95,7 +96,9 @@ for task in tasks:
     log(f"── {task}: solving")
     t0 = time.time()
     with open(f"{LAB}/logs/task-{project}.log", "w") as lf:
-        subprocess.run([TETI, "solve", "--brain", "--project", project, "--dir", f"projects/{project}", "--task", text],
+        # TETI_MODEL_ARGS picks another model for the whole loop, e.g. "--lane fast" (9B) or "--model M --host URL" (11/16)
+        margs = shlex.split(os.environ["TETI_MODEL_ARGS"]) if os.environ.get("TETI_MODEL_ARGS") else ["--brain"]
+        subprocess.run([TETI, "solve", *margs, "--project", project, "--dir", f"projects/{project}", "--task", text],
                        cwd=LAB, stdout=lf, stderr=subprocess.STDOUT)
     secs = time.time() - t0
     tlog = open(f"{LAB}/logs/task-{project}.log").read()

@@ -55,6 +55,8 @@ public actor ThinkingLoop {
     let maxLoops: Int
     let track = TrackKeeper()
     var lastTiFinal = ""
+    static var twins: Bool { ProcessInfo.processInfo.environment["TETI_TWINS"] == "1" }   // 11/17 user: "the twins"
+    static var lean: Bool { ProcessInfo.processInfo.environment["TETI_LEAN"] == "1" }   // 11/17 user: out of the box + offloading only
     var keyCode: String? = nil          // Fi's trusted answer key, kept to judge checks added LATER (gate5v3 task 3, 11/16)
     /// Ti's voice (exam task 12, 11/10): checks Ti flagged as contradicting the task, name → why. Fi judges them.
     var tiFlags: [String: String] = [:]
@@ -162,7 +164,7 @@ public actor ThinkingLoop {
             let stack = pickStack(task)
             var teKnowledge = knowledge
             emit(.note("Stack: \(stack)"))
-            if stack == "ne-first" { teKnowledge += await neFirst(task: task) }
+            if stack == "ne-first", !Self.lean, !Self.twins { teKnowledge += await neFirst(task: task) }
             // TOOL OFFLOADING for tests (user 11/16, after 4 rounds where the CODE was right and Te's tests were wrong): Te only
             // picks the cases (judgment); code writes every test in one safe format; two independent answer keys work out the
             // exact expected output (exact work). TETI_TE=classic keeps the old path for racing.
@@ -217,15 +219,99 @@ public actor ThinkingLoop {
             // BEST OF 3 (user 11/16, "many tries, pick the best"): up to 3 plain drafts, each in its own copy, scored by the
             // checks the answer key already vetted; stop early on a perfect one. Out of the box the model was a coin flip on
             // tasks 2/4/8/12 (1 in 3), so 3 tries in ~3 min beat one try + a long loop. TETI_DRAFTS=1 = the old single try.
-            let nDrafts = max(1, Int(ProcessInfo.processInfo.environment["TETI_DRAFTS"] ?? "") ?? 3)
+            let nDrafts = Self.lean ? 1 : max(1, Int(ProcessInfo.processInfo.environment["TETI_DRAFTS"] ?? "") ?? 3)   // lean = ONE try, like out of the box
             // outside .teti: Sandbox.inside refuses any path under /.teti/ (first try of this, 11/16, saved nothing)
             let draftRoot = NSTemporaryDirectory() + "teti-drafts-" + UUID().uuidString
             try? fm.removeItem(atPath: draftRoot)
             var top: (path: String, p: Int, wrote: [String], k: Int)? = nil
+            let draftMsgs: [BrainMessage] = [.init(role: .system, content: "You are a helpful coding assistant."),
+                                             .init(role: .user, content: task + shown + "\n\nReply with every file you create or change, each one complete, as:\n<write_file path=\"relative/path\">full file content</write_file>")]
+            // THE TWINS (user 11/17). Twin A "Quick" = out of the box (the exact baseline prompt, one try). Twin B "Checker" =
+            // offloading: its tests (Te's cases + two answer keys) are already in `checks`; it writes its own answer only if
+            // Quick misses. Picker: Quick passes every test -> done. Else compare: B wins only with MORE tests passed (the
+            // tests guessed wrong on change-existing-code tasks 3x tonight, so a tie keeps Quick). Both twins printing the
+            // same thing on every test input = differential testing: counted as agreement even if the expected values are off.
+            if Self.twins {
+                func put(_ reply: String, _ d: String) -> Int {
+                    copyProject(from: dir, to: d)
+                    var pw = parseWrites(reply.components(separatedBy: "</think>").last ?? reply)
+                    if pw.isEmpty, let only = Self.singleFileName(task), let c = Self.firstCodeBlock(reply) { pw = [(only, c)] }
+                    var n = 0
+                    for (path, body) in pw {
+                        guard let p = Sandbox.inside(d, path) else { continue }
+                        try? fm.createDirectory(atPath: (p as NSString).deletingLastPathComponent, withIntermediateDirectories: true)
+                        if (try? body.write(toFile: p, atomically: true, encoding: .utf8)) != nil { n += 1 }
+                    }
+                    return n
+                }
+                let root = NSTemporaryDirectory() + "teti-twins-" + UUID().uuidString
+                defer { try? fm.removeItem(atPath: root) }
+                emit(.phase("Twin A (Quick): out of the box, one try", loop: 0))
+                let qa = await ask(draftMsgs, phase: "twin-quick", maxTokens: 8192)
+                _ = put(qa, root + "/a")
+                let ra = runChecks(checks, in: root + "/a", emitting: false)
+                let pa = ra.filter { $0.ok }.count
+                emit(.note(String(format: "Twin A (Quick): %d/%d of Checker's tests (%.0f s in)", pa, checks.count, Date().timeIntervalSince(t0))))
+                var pick = "a", why = "Quick passed every test"
+                var solved = pa == checks.count
+                if !solved {
+                    emit(.phase("Twin B (Checker): its own answer, with the calculator", loop: 0))
+                    var msgsB: [BrainMessage] = [draftMsgs[0], .init(role: .user, content: draftMsgs[1].content + "\n\nIf you need exact arithmetic, first reply ONLY with <calc>python expression</calc> lines and stop; you'll get exact answers back.")]
+                    var qb = await ask(msgsB, phase: "twin-checker", maxTokens: 8192)
+                    let calcs = Array(allMatches(#"<calc>(.*?)</calc>"#, qb).prefix(12))
+                    if parseWrites(qb).isEmpty, Self.firstCodeBlock(qb) == nil, !calcs.isEmpty {
+                        let answers = calcs.map { e -> String in
+                            let py = "print(eval(" + Self.pyString(e) + ", {'__builtins__': {}}, {'len': len, 'sum': sum, 'range': range, 'min': min, 'max': max, 'abs': abs, 'divmod': divmod, 'str': str, 'round': round, 'int': int, 'float': float, 'sorted': sorted}))"
+                            let (c, o) = Sandbox.run(dir, "python3 -I -c " + Self.shellQuote(py), timeout: 5)
+                            return e + " = " + (c == 0 ? o.trimmingCharacters(in: .whitespacesAndNewlines) : "(error)")
+                        }
+                        emit(.note("Twin B: calculator: " + answers.joined(separator: " · ").prefix(300)))
+                        msgsB += [.init(role: .assistant, content: qb), .init(role: .user, content: "EXACT ANSWERS (computed):\n" + answers.joined(separator: "\n") + "\nNow write the files.")]
+                        qb = await ask(msgsB, phase: "twin-checker-calc", maxTokens: 8192)
+                    }
+                    _ = put(qb, root + "/b")
+                    let rb = runChecks(checks, in: root + "/b", emitting: false)
+                    let pb = rb.filter { $0.ok }.count
+                    let same = zip(ra, rb).filter { Self.norm($0.output) == Self.norm($1.output) && $0.ok == $1.ok }.count
+                    emit(.note(String(format: "Twin B (Checker): %d/%d tests · the twins print the same thing on %d/%d test inputs (%.0f s in)", pb, checks.count, same, checks.count, Date().timeIntervalSince(t0))))
+                    if pb > pa { pick = "b"; why = "Checker passed more tests (\(pb) vs \(pa))"; solved = pb == checks.count }
+                    else if same == checks.count { why = "the twins agree on every input, so the tests are probably what's wrong"; solved = true }
+                    else { why = pb == pa ? "tie, Quick keeps it (\(pa) each)" : "Quick passed more tests (\(pa) vs \(pb))" }
+                }
+                replaceProject(dir, with: root + "/" + pick)
+                emit(.note("Twins: keeping Twin \(pick == "a" ? "A (Quick)" : "B (Checker)"): \(why)"))
+                let final = runChecks(checks, in: dir, emitting: true).filter { $0.ok }.count
+                emit(.verdict(passed: final, total: checks.count, feedback: "twins: " + why))
+                return finish(t0, solved: solved, loops: 0, passed: final, total: checks.count, approach: "twins (\(pick))", help: nil)
+            }
+            // 11/17 batched drafts (TETI_BATCH_DRAFTS=1). Measured on the 4-bit 9B: a batch writes 1.3x more words/s than one
+            // answer (44.6 vs 34), but draft 1 is often already perfect, so batching all 3 upfront would waste time. Draft 1
+            // goes alone; only if it misses are the remaining drafts written side by side in one batch.
+            let batchOn = nDrafts > 2 && ProcessInfo.processInfo.environment["TETI_BATCH_DRAFTS"] == "1"
+            var batched: [String] = []
             for k in 1...nDrafts {
-                let reply = await ask([.init(role: .system, content: "You are a helpful coding assistant."),
-                                       .init(role: .user, content: task + shown + "\n\nReply with every file you create or change, each one complete, as:\n<write_file path=\"relative/path\">full file content</write_file>")],
-                                      phase: "fast-path-\(k)", maxTokens: 8192)
+                if batchOn, k == 2, batched.isEmpty {
+                    let tb = Date()
+                    do { batched = try await model.completeMany(draftMsgs, n: nDrafts - 1, maxTokens: 8192, think: false) }
+                    catch { emit(.note("batched drafts failed (\(error.localizedDescription)); one at a time")) }
+                    if !batched.isEmpty { emit(.note(String(format: "Batched drafts: %d more written side by side in %.0f s", batched.count, Date().timeIntervalSince(tb)))) }
+                }
+                let bi = k - 2
+                var reply = (bi >= 0 && bi < batched.count) ? batched[bi] : await ask(Self.lean ? [draftMsgs[0], .init(role: .user, content: draftMsgs[1].content + "\n\nIf you need exact arithmetic, first reply ONLY with <calc>python expression</calc> lines and stop; you'll get exact answers back.")] : draftMsgs, phase: "fast-path-\(k)", maxTokens: 8192)
+                // lean: the calculator is the one tool in the plain try (user 11/17: out of the box + Python + offloading + calculator)
+                if Self.lean, parseWrites(reply).isEmpty, Self.firstCodeBlock(reply) == nil {
+                    let calcs = Array(allMatches(#"<calc>(.*?)</calc>"#, reply).prefix(12))
+                    if !calcs.isEmpty {
+                        let answers = calcs.map { e -> String in
+                            let py = "print(eval(" + Self.pyString(e) + ", {'__builtins__': {}}, {'len': len, 'sum': sum, 'range': range, 'min': min, 'max': max, 'abs': abs, 'divmod': divmod, 'str': str, 'round': round, 'int': int, 'float': float, 'sorted': sorted}))"
+                            let (c, o) = Sandbox.run(dir, "python3 -I -c " + Self.shellQuote(py), timeout: 5)
+                            return e + " = " + (c == 0 ? o.trimmingCharacters(in: .whitespacesAndNewlines) : "(error)")
+                        }
+                        emit(.note("Lean: calculator: " + answers.joined(separator: " · ").prefix(300)))
+                        reply = await ask(draftMsgs + [.init(role: .assistant, content: reply), .init(role: .user, content: "EXACT ANSWERS (computed):\n" + answers.joined(separator: "\n") + "\nNow write the files.")], phase: "fast-path-calc", maxTokens: 8192)
+                    }
+                }
+                reply = reply.components(separatedBy: "</think>").last ?? reply
                 let d = draftRoot + "/d\(k)"
                 copyProject(from: dir, to: d)
                 var w: [String] = []
@@ -250,6 +336,55 @@ public actor ThinkingLoop {
                 if nDrafts > 1 { emit(.note("Fast path: keeping draft \(t.k) (\(t.p)/\(checks.count))")) }
             }
             try? fm.removeItem(atPath: draftRoot)
+            // LEAN MODE (user 11/17, for small models): out of the box + offloading only. Code-written tests from two answer
+            // keys, best of 3 drafts, then at most 2 short fix rounds fed EXACT code-written differences, with the calculator.
+            // No Fi / Ne / Se / audits: on task 2 an extra role (Ne) wrote a wrong test and cost 4.5 min. TETI_LEAN=1.
+            if Self.lean {
+                var res = runChecks(checks, in: dir, emitting: true)
+                var bestP = res.filter { $0.ok }.count
+                let keep = dir + "/.teti/lean-best"
+                try? fm.removeItem(atPath: keep); copyProject(from: dir, to: keep)
+                var round = 0
+                let maxFix = Int(ProcessInfo.processInfo.environment["TETI_LEAN_FIX"] ?? "") ?? 0   // user 11/17: no fix rounds (0); kept as a switch
+                while bestP < checks.count && round < maxFix {
+                    round += 1
+                    emit(.phase("Lean fix round \(round): exact differences from code", loop: round))
+                    let files = ((try? fm.contentsOfDirectory(atPath: dir)) ?? []).filter { !$0.hasPrefix(".") && (((try? fm.attributesOfItem(atPath: dir + "/" + $0))?[.size] as? Int) ?? 99999) < 20000 }.sorted()
+                    let code = files.compactMap { f in (try? String(contentsOfFile: dir + "/" + f, encoding: .utf8)).map { "\n\nFILE \(f):\n```\n\($0)\n```" } }.joined()
+                    let fails = res.filter { !$0.ok }.map { "- \($0.check.name): \($0.check.command)\n  \(String($0.output.suffix(500)))" }.joined(separator: "\n")
+                    var msgs: [BrainMessage] = [.init(role: .system, content: "You are a helpful coding assistant."),
+                        .init(role: .user, content: "TASK: " + task + code + "\n\nThese tests were generated by code and their expected outputs were computed by two independent reference programs, so they are correct. Failing:\n" + fails +
+                              "\n\nIf you need any arithmetic, first reply ONLY with <calc>python expression</calc> lines and stop; you'll get exact answers. Otherwise fix the code and reply with every changed file, complete, as:\n<write_file path=\"relative/path\">full file content</write_file>")]
+                    var reply = await ask(msgs, phase: "lean-fix-\(round)", maxTokens: 8192)
+                    let calcs = Array(allMatches(#"<calc>(.*?)</calc>"#, reply).prefix(12))
+                    if !calcs.isEmpty && parseWrites(reply).isEmpty {
+                        let answers = calcs.map { e -> String in
+                            let py = "print(eval(" + Self.pyString(e) + ", {'__builtins__': {}}, {'len': len, 'sum': sum, 'range': range, 'min': min, 'max': max, 'abs': abs, 'divmod': divmod, 'str': str, 'round': round, 'int': int, 'float': float, 'sorted': sorted}))"
+                            let (c, o) = Sandbox.run(dir, "python3 -I -c " + Self.shellQuote(py), timeout: 5)
+                            return e + " = " + (c == 0 ? o.trimmingCharacters(in: .whitespacesAndNewlines) : "(error)")
+                        }
+                        emit(.note("Lean: calculator: " + answers.joined(separator: " · ").prefix(300)))
+                        msgs += [.init(role: .assistant, content: reply), .init(role: .user, content: "EXACT ANSWERS (computed):\n" + answers.joined(separator: "\n") + "\nNow reply with the fixed files.")]
+                        reply = await ask(msgs, phase: "lean-fix-\(round)-calc", maxTokens: 8192)
+                    }
+                    var pw = parseWrites(reply)
+                    if pw.isEmpty, let only = Self.singleFileName(task), let c = Self.firstCodeBlock(reply) { pw = [(only, c)] }
+                    for (path, body) in pw {
+                        guard let p = Sandbox.inside(dir, path) else { continue }
+                        try? fm.createDirectory(atPath: (p as NSString).deletingLastPathComponent, withIntermediateDirectories: true)
+                        try? body.write(toFile: p, atomically: true, encoding: .utf8)
+                    }
+                    res = runChecks(checks, in: dir, emitting: true)
+                    let p = res.filter { $0.ok }.count
+                    emit(.note("Lean round \(round): \(p)/\(checks.count) (best so far \(bestP))"))
+                    if p > bestP { bestP = p; try? fm.removeItem(atPath: keep); copyProject(from: dir, to: keep) }
+                    else { replaceProject(dir, with: keep); res = runChecks(checks, in: dir, emitting: false) }   // rollback
+                }
+                replaceProject(dir, with: keep)
+                try? fm.removeItem(atPath: keep)
+                emit(.verdict(passed: bestP, total: checks.count, feedback: "lean mode"))
+                return finish(t0, solved: bestP == checks.count, loops: round, passed: bestP, total: checks.count, approach: "lean", help: nil)
+            }
             if !wrote.isEmpty {
                 saveVersion("fast-path")
                 var r0 = runChecks(checks, in: dir, emitting: true)
@@ -1068,7 +1203,9 @@ public actor ThinkingLoop {
     /// Only when all program calls are the same program, and never for build checks (the key has nothing to build).
     static func swapJob(_ c: Check) -> String? {
         let cmd = c.command
-        if cmd.contains("swift build") || cmd.contains("test -f") || cmd.contains("ls ") || cmd.contains("grep -q") && cmd.contains(".swift") { return nil }
+        if cmd.contains("swift build") || cmd.contains("test -f") || cmd.contains("ls ") || cmd.contains("grep -q") && cmd.contains(".swift") && !cmd.contains("|") { return nil }
+        // ^ 11/17 task 2: "swift tempconv.swift -100 F | grep -q 55.6" (wrong: it's -73.3) skipped the answer key because
+        //   it has grep -q and .swift. Only a grep that READS a .swift source file is skipped now; a piped run gets checked.
         guard let rx = try? NSRegularExpression(pattern: #"python3\s+-m\s+[\w.]+|python3\s+[\w./-]+\.py|swift\s+run\s+(?:-q\s+)?[\w-]+|swift\s+[\w./-]+\.swift|\.build/[\w./-]+|\./[\w.-]+(?=\s|$|\|)"#) else { return nil }
         let ms = rx.matches(in: cmd, range: NSRange(cmd.startIndex..., in: cmd))
         guard !ms.isEmpty else { return nil }
@@ -1306,7 +1443,7 @@ public actor ThinkingLoop {
         let calcs = Array(allMatches(#"<calc>(.*?)</calc>"#, reply).prefix(12))
         if !calcs.isEmpty {
             let answers = calcs.map { e -> String in
-                let py = "print(eval(" + Self.pyString(e) + ", {'__builtins__': {}}, {'len': len, 'sum': sum, 'range': range, 'min': min, 'max': max, 'abs': abs, 'divmod': divmod, 'str': str, 'list': list, 'sorted': sorted}))"
+                let py = "print(eval(" + Self.pyString(e) + ", {'__builtins__': {}}, {'len': len, 'sum': sum, 'range': range, 'min': min, 'max': max, 'abs': abs, 'divmod': divmod, 'str': str, 'list': list, 'sorted': sorted, 'round': round, 'int': int, 'float': float}))"
                 let (code, out) = Sandbox.run(dir, "python3 -I -c " + Self.shellQuote(py), timeout: 5)
                 return e + " = " + (code == 0 ? out.trimmingCharacters(in: .whitespacesAndNewlines) : "(error)")
             }
@@ -1385,7 +1522,7 @@ public actor ThinkingLoop {
 
     /// A Python string literal for any text (JSON strings are valid Python literals).
     nonisolated static func pyString(_ s: String) -> String {
-        (try? JSONSerialization.data(withJSONObject: [s])).flatMap { String(data: $0, encoding: .utf8) }.map { String($0.dropFirst().dropLast()) } ?? "''"
+        (try? JSONSerialization.data(withJSONObject: [s], options: .withoutEscapingSlashes)).flatMap   /* 11/17: "/" was sent as "\/" so every division broke the calculator */ { String(data: $0, encoding: .utf8) }.map { String($0.dropFirst().dropLast()) } ?? "''"
     }
 
     nonisolated static func shellQuote(_ s: String) -> String { "'" + s.replacingOccurrences(of: "'", with: "'\\''") + "'" }
