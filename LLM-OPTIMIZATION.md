@@ -85,6 +85,11 @@ The model only uses about 3B parameters per word, and small models make small mi
 - **exact output difference** by code ("line 2: expected `TOTAL: 16.00`, got `TOTAL: 16.0`, first difference
   at character 11") instead of a 30 to 50 second model write-up every round
 - a **known error → known fix** table for common Swift and Python errors, attached instantly
+- **the tests themselves** (the biggest one so far). The model used to write whole shell commands for its tests,
+  and every round found a new trap: macOS `wc` pads numbers with spaces, `diff` complains about a missing final
+  newline, the file passed as an argument instead of piped in. Now the test writer only **picks the inputs**
+  (empty text, a tie, no final newline...). Two separately written answer keys compute the expected output, and
+  **code writes every test** in one exact format. A case only becomes a test if both keys agree on it.
 
 ### 5. Stop at the right time
 The pattern I kept seeing: it does fine, gets hung up on a hard step, then starts making simple mistakes and
@@ -129,7 +134,34 @@ overnight add-on (LoRA). This only makes sense once the judges are right, which 
 | False wins, 3 hardest tasks | 1 in 9 | fix added for the cause | |
 | False win, calculator (new) | | found + fixed | my own bug: the answer-key code cut commands off at the first `)`, so tests with parentheses broke and good tests got dropped |
 
+| Text stats, Python (task 12) | stopped at 9 min, 5 runs in a row (code was right every time; the tests were wrong) | **2.2 min, solved, first draft 7/7** | test offloading, single run |
+| Quick test (tasks 2, 6, 11, 12) | 6 and 12 often hit the 9-minute stop | **4/4 passed, all under 9 min** (1, 2, 2, 8 min) | after fixing one bug of mine (a false win on task 11) |
+
 These are early, mostly single runs. A full repeat run of all 12 tasks is next, and I'll post the real averages.
+
+## Python or Swift?
+
+Same task, same model, written once in each language:
+
+| | Python | Swift |
+|---|---|---|
+| First good draft | ~1.4 min | ~3.8 min |
+| Ran on the first try | every round | 2 of 5 rounds had build errors |
+| Best finish | 2.2 min | 4 min |
+
+Python was faster for two reasons: there's no compile step on every test run, and the model has seen far more
+Python, so it never got the basics wrong (it got Swift's standard-input reading wrong twice). But the bigger win
+was the test offloading, not the language: the Python code was correct in all five runs and still failed until
+the tests were fixed. My rule now: Python when the task doesn't care, Swift when it needs Apple's tools.
+
+## Bigger isn't faster on 32 GB
+
+I also run a slimmed 122B that streams its experts from the SSD. On this Mac it writes about **1.2 words per
+second** vs **37** for the 35B, and on an earlier full exam it scored 9/12 but took **about 2 hours per task**.
+Warming it up didn't help: only about a third of its experts fit in RAM, so roughly 1 word in 3 waits on the SSD.
+That can't meet the 9-minute rule, so it's **demoted to an overnight backup** (only used when asked). The fix for
+that one is more RAM, not more cleverness. Next contender for the "bigger brain" slot: a 27B dense model that
+fits entirely in memory.
 
 ## A bonus bug this found
 

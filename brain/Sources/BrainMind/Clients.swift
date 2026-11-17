@@ -44,9 +44,12 @@ public struct BrainSocketClient: ModelClient {
         // the socket calls block, so they run on their own thread instead of holding up Swift's async workers
         return try await withCheckedThrowingContinuation { cont in
             Thread.detachNewThread {
-                do {
+                // 11/15: a reply that never came froze task 12 for 47 min (read() with no limit). Now: 10 min of
+                // silence = give up on that try, and ask once more before reporting the error.
+                func once() throws -> String {
                     let conn = try Wire.connect(to: path)
                     defer { conn.close() }
+                    conn.setReadTimeout(600)
                     try conn.send(req)
                     var text = ""
                     loop: while true {
@@ -56,7 +59,12 @@ public struct BrainSocketClient: ModelClient {
                         case .failure(let f): throw NSError(domain: "brain", code: 1, userInfo: [NSLocalizedDescriptionKey: f])
                         }
                     }
-                    cont.resume(returning: text)
+                    return text
+                }
+                do { cont.resume(returning: try once()) }
+                catch WireError.system(let why) where why.contains("timed out") || why.contains("Resource temporarily") {
+                    FileHandle.standardError.write("brain socket: no reply in 10 min (\(why)), asking once more\n".data(using: .utf8)!)
+                    do { cont.resume(returning: try once()) } catch { cont.resume(throwing: error) }
                 } catch { cont.resume(throwing: error) }
             }
         }

@@ -3,6 +3,10 @@ import BrainCore
 import BrainEngine
 import BrainMind
 
+// 11/16: a client that hangs up mid-answer made the next socket write raise SIGPIPE, which kills the process silently (no
+// crash report): the long-unexplained 'brain-server death'. Ignore it; the write just fails and that request ends.
+signal(SIGPIPE, SIG_IGN)
+
 // brain-server: the main server of Code Smash TeTi. Organs run as Swift actors in parallel:
 //   Engine (GPU) · WorkingMemory (Si) · KnowledgeBank (Ni) · Values (Fi)
 // Doors:

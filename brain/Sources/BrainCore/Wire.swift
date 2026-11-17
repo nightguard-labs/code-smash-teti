@@ -55,6 +55,12 @@ public struct WireConnection: @unchecked Sendable {
         return data
     }
 
+    /// Give up on a read after this many seconds of silence (11/15: task 12 froze 47 min waiting on a reply that never came).
+    public func setReadTimeout(_ seconds: Int) {
+        var tv = timeval(tv_sec: seconds, tv_usec: 0)
+        setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, socklen_t(MemoryLayout<timeval>.size))
+    }
+
     public func close() { Darwin.close(fd) }
 }
 

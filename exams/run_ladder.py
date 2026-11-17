@@ -12,7 +12,7 @@ Usage: python3 exams/run_ladder.py [--round NAME] [--only 01-fizzbuzz,...]
 import glob, json, os, re, shutil, subprocess, sys, tempfile, time, urllib.request
 
 LAB = os.path.expanduser("~/local-ai/brain-lab")
-LADDER = f"{LAB}/exams/ladder"
+LADDER = os.environ.get("TETI_LADDER") or f"{LAB}/exams/ladder"   # TETI_LADDER=exams/ladder-py for the Python twins (11/16)
 RESULTS = f"{LAB}/memory/exams/results.json"
 REWARDS = f"{LAB}/memory/rewards"
 TETI = f"{LAB}/brain/.build/release/teti"
@@ -64,7 +64,7 @@ def run_hidden(task, project_dir):
     """Hidden tests run on a COPY, so the brain's project is never touched by them."""
     with tempfile.TemporaryDirectory(prefix="teti-hidden-") as tmp:
         work = os.path.join(tmp, "p")
-        shutil.copytree(project_dir, work, ignore=shutil.ignore_patterns(".teti", ".build"))
+        shutil.copytree(project_dir, work, symlinks=True, ignore=shutil.ignore_patterns(".teti", ".build"))  # symlinks=True: a dangling link the brain made crashed the grader (11/11)
         try:
             r = subprocess.run(["zsh", f"{LADDER}/{task}/hidden.sh"], cwd=work, capture_output=True, text=True, timeout=900)
             out = r.stdout + r.stderr

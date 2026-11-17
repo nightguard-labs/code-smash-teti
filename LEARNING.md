@@ -118,5 +118,28 @@ Then I wanted to contribute numbers from my 32 GB Mac to another builder's proje
 
 > **Lesson:** Limits force you to be deliberate. Running out of room taught me the same thing running out of RAM did: know exactly what you have, what depends on it, and what can safely go.
 
+### Nov 2026 · Figured out: Reading code is translation, not logic
+
+I found a real regex bug in my own status script: `[a-z0-9]` didn't allow a dash, so task names like
+`12-textstats-py` were skipped (87 matches instead of 125). The fix was one character, `[a-z0-9-]`. Finding it
+wasn't the hard part. The hard part was reading the symbols. I'd translate one symbol, start reasoning, hit the
+next symbol, stop to translate that, and then have to reread my own thinking to pick the logic back up. That's
+the same thing a language model does when it rereads its whole chat.
+
+So I split it into two passes: **translate first** (write every symbol out in plain English), **then reason**
+on the English. To make the first pass faster I built a small notepad with a phrasebook of common symbols:
+[Memory Cell](memory-cell/). The goal is to need it less over time.
+
+> **Lesson:** When something feels hard, find which part is actually hard. For me it wasn't the logic, it was
+> the translation. Once I named that, I could build a tool for exactly that part.
+
+### Nov 2026 · Figured out: The test was wrong, not the code
+
+Five runs in a row, my coding brain wrote correct Python and still "failed." Every time, the tests the model
+wrote for itself had a new mistake. Moving that exact work to code (the model picks the inputs, two answer keys
+compute the answers, code writes the tests) took the same task from a 9-minute stop to a 2-minute solve.
+
+> **Lesson:** Before fixing the thing that failed, check the thing that judged it.
+
 ---
 *Full build history of the main project: [PROGRESS.md](PROGRESS.md) · who does what: [HOW-ITS-BUILT.md](HOW-ITS-BUILT.md)*

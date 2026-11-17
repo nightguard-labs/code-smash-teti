@@ -64,8 +64,11 @@ let stack: [Layer] = [
     Layer(lane: "fast", label: "⚡ 9B", loops: 2, brain: nil),
     Layer(lane: "middle", label: "🧠 35B", loops: 2, brain: nil),
     Layer(lane: "big", label: "🦾 Qwen3-Next 80B", loops: 3, brain: "code-smash-next"),
-    Layer(lane: "big", label: "🐘 Code Smash TeTi 122B", loops: maxLoops, brain: nil),   // nil = the owner's active 122B
-].filter { !skip.contains($0.label.components(separatedBy: " ").dropFirst().joined(separator: " ")) && !skip.contains($0.lane) }
+    // DEMOTED 11/16 (owner OK): on 32 GB the 122B writes ~1.2 words/s (2 h per task), so it can't meet the 9-minute rule.
+    // It only joins as the slow overnight backup when asked: --overnight (or TETI_OVERNIGHT=1).
+    Layer(lane: "big", label: "🐘 Code Smash TeTi 122B", loops: maxLoops, brain: "code-smash-teti-c90-b2"),
+].filter { $0.label.contains("122B") == false || CommandLine.arguments.contains("--overnight") || ProcessInfo.processInfo.environment["TETI_OVERNIGHT"] == "1" }
+ .filter { !skip.contains($0.label.components(separatedBy: " ").dropFirst().joined(separator: " ")) && !skip.contains($0.lane) }
 
 func http(_ method: String, _ url: String, _ body: [String: Any]? = nil, timeout: Double = 30) async -> [String: Any]? {
     guard let u = URL(string: url) else { return nil }

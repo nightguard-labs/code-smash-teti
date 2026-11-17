@@ -26,7 +26,8 @@ public actor Engine {
     /// Load an MLX model folder from local disk (no network).
     public func load(directory: URL, name: String? = nil) async throws {
         // Leave headroom for macOS, a small always-on model, and the SSD relay (32 GB machine).
-        MLX.GPU.set(cacheLimit: 2 << 30)
+        // RAM squeeze 11/16 (brain 21 GB + browser + canary -> 5.7 GB swap, 0.03 tok/s): 1 GB cache by default.
+        MLX.GPU.set(cacheLimit: (Int(ProcessInfo.processInfo.environment["TETI_GPU_CACHE_MB"] ?? "") ?? 1024) << 20)
         if StreamingLoader.isLaid(directory) {
             // load the draft first, so the expert cache sizes itself to the RAM that's left
             // each brain can name its own draft (a "draft-model" link in its folder): the draft must share the brain's
@@ -97,7 +98,7 @@ public actor Engine {
     /// `draft`: the draft model's state at the same point, so it doesn't re-read the whole conversation either.
     struct PromptSnapshot { var tokens: [Int32]; var cache: [KVCache]; var used: Date; var draft: [KVCache]? = nil }
     private var snapshots: [PromptSnapshot] = []
-    private let maxSnapshots = 8
+    private let maxSnapshots = Int(ProcessInfo.processInfo.environment["TETI_SNAPSHOTS"] ?? "") ?? 4   // was 8 (RAM squeeze 11/16)
     public private(set) var reusedTokens = 0, readTokens = 0
 
     func takeSnapshot(for tokens: [Int32]) -> (cache: [KVCache], count: Int, draft: [KVCache]?)? {
