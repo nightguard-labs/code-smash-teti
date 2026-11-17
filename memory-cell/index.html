@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{margin:0}[hidden]{display:none!important}</style>
+<title>My Memory Cell</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: phrasebook rail (lookup) beside a two-pass notepad (translate, then reason). Stacks on phones. */
+:root{
+  --bg:#eef1f6; --panel:#ffffff; --ink:#1b2333; --muted:#5d6a80; --line:#d5dbe6;
+  --accent:#3a55c8; --accent-soft:#e3e8fb; --code-bg:#f3f5fa; --ok:#1f7a4d; --warn:#9a5b00;
+  --f-display:"Space Grotesk",system-ui,sans-serif; --f-body:"Inter",system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121722; --panel:#1a2130; --ink:#e4e9f2; --muted:#9aa6bb; --line:#2c3547;
+  --accent:#8ea2ff; --accent-soft:#25305a; --code-bg:#141a26; --ok:#5fd39a; --warn:#f0b35a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121722; --panel:#1a2130; --ink:#e4e9f2; --muted:#9aa6bb; --line:#2c3547;
+  --accent:#8ea2ff; --accent-soft:#25305a; --code-bg:#141a26; --ok:#5fd39a; --warn:#f0b35a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.wrap{max-width:1180px;margin:0 auto;display:grid;gap:20px}
+header h1{font-family:var(--f-display);font-size:1.7rem;margin:0;text-wrap:balance}
+header p{margin:4px 0 0;color:var(--muted);max-width:65ch}
+.grid{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+h2{font-family:var(--f-display);font-size:1.05rem;margin:0 0 10px}
+.label{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+code,.mono{font-family:var(--f-mono);font-size:.86em}
+/* phrasebook */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tabs button{font:inherit;font-size:.85rem;border:1px solid var(--line);background:transparent;color:var(--ink);padding:4px 10px;border-radius:999px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+#find{width:100%;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--code-bg);color:var(--ink);margin-bottom:10px}
+.pb{display:grid;gap:2px;max-height:62vh;overflow:auto}
+.pb .sec{margin:10px 0 4px}
+.row{display:grid;grid-template-columns:minmax(0,7.5em) minmax(0,1fr);gap:10px;padding:5px 6px;border-radius:6px;cursor:pointer}
+.row:hover,.row:focus-visible{background:var(--accent-soft);outline:none}
+.row code{background:var(--code-bg);padding:1px 5px;border-radius:4px;word-break:break-all}
+.tip{font-size:.85rem;color:var(--muted);border-left:3px solid var(--accent);padding:4px 10px;margin:8px 0}
+/* notepad */
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:12px}
+.btn{font:inherit;font-weight:600;border:1px solid var(--accent);background:var(--accent);color:#fff;padding:7px 14px;border-radius:8px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.danger{background:transparent;border-color:var(--line);color:var(--muted)}
+.btn:focus-visible,.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.status{font-size:.82rem;color:var(--muted)}
+.status.ok{color:var(--ok)} .status.warn{color:var(--warn)}
+.notes-layout{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:16px}
+@media (max-width:620px){.notes-layout{grid-template-columns:minmax(0,1fr)}}
+.list{display:grid;gap:6px;align-content:start;max-height:70vh;overflow:auto}
+.item{text-align:left;font:inherit;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:8px;padding:8px 10px;cursor:pointer}
+.item[aria-current="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.item small{display:block;color:var(--muted);font-size:.75rem}
+.editor{display:grid;gap:12px;min-width:0}
+.field{display:grid;gap:4px}
+.step{display:flex;gap:8px;align-items:baseline}
+.step b{font-family:var(--f-display);color:var(--accent)}
+input[type=text],textarea{width:100%;font:inherit;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--code-bg);color:var(--ink);resize:vertical}
+textarea.code{font-family:var(--f-mono);font-size:.88rem}
+input:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:0;border-color:transparent}
+.hint{font-size:.8rem;color:var(--muted)}
+.empty{color:var(--muted);font-size:.9rem;padding:10px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>My Memory Cell</h1>
+    <p>Translate first, then think. Write the code, turn every symbol into plain English (pass 1), then hunt the logic using only your English (pass 2). Click any phrasebook row to drop its meaning into pass 1. Your notes stay in this browser only; use Export to back them up.</p>
+  </header>
+
+  <div class="grid">
+    <aside class="panel" aria-label="Phrasebook">
+      <h2>Phrasebook</h2>
+      <div class="tabs" role="group" aria-label="Language">
+        <button type="button" data-tab="regex" aria-pressed="true">Regex</button>
+        <button type="button" data-tab="python" aria-pressed="false">Python</button>
+        <button type="button" data-tab="shell" aria-pressed="false">Shell</button>
+        <button type="button" data-tab="swift" aria-pressed="false">Swift</button>
+      </div>
+      <input id="find" type="text" placeholder="Look up a symbol, e.g. \d or |" aria-label="Look up a symbol">
+      <div id="pb" class="pb"></div>
+    </aside>
+
+    <section class="panel" aria-label="Notepad">
+      <div class="toolbar">
+        <h2 style="margin:0">Notepad</h2>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span id="status" class="status">Saved in this browser</span>
+          <button type="button" class="btn ghost" id="export">Export</button>
+          <label class="btn ghost" for="import" style="cursor:pointer">Import</label><input id="import" type="file" accept=".json,application/json" hidden>
+          <button type="button" class="btn" id="new">New note</button>
+        </div>
+      </div>
+      <div class="notes-layout">
+        <div id="list" class="list"><div class="empty">Your notes will show up here. Press “New note” to start your first one.</div></div>
+        <div class="editor">
+          <div class="field">
+            <label class="label" for="title">Title</label>
+            <input id="title" type="text" placeholder="e.g. Lesson 4: the missing task 12">
+          </div>
+          <div class="field">
+            <label class="label" for="code">The code</label>
+            <textarea id="code" class="code" rows="3" placeholder="Paste the line you're reading"></textarea>
+          </div>
+          <div class="field">
+            <div class="step"><b>Pass 1</b><label class="label" for="english">Translate: every symbol in plain English</label></div>
+            <textarea id="english" rows="4" placeholder="No bug hunting yet. Just say what each piece means."></textarea>
+            <span class="hint">Tip: click phrasebook rows to add meanings here.</span>
+          </div>
+          <div class="field">
+            <div class="step"><b>Pass 2</b><label class="label" for="logic">Think: the logic, the bug, the fix</label></div>
+            <textarea id="logic" rows="4" placeholder="Reason only from your English sentence."></textarea>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button type="button" class="btn" id="save">Save</button>
+            <button type="button" class="btn danger" id="del">Delete note</button>
+            <span id="confirm" hidden class="hint" style="align-self:center">Press Delete again to remove it for good.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+const BOOK = {
+  regex: [
+    ["Single characters"],
+    ["a  x  :", "that exact character"],
+    ["\\d", "one digit (0-9)"],
+    ["\\w", "one letter, digit, or underscore"],
+    ["\\s", "one space, tab, or newline"],
+    [".", "any one character"],
+    ["\\.  \\(  \\-", "a plain . ( or - (backslash turns off the special meaning)"],
+    ["Sets: one character from a list"],
+    ["[abc]", "one of: a, b, or c"],
+    ["[a-z]", "one lowercase letter, a THROUGH z"],
+    ["[a-z0-9-]", "one lowercase letter, digit, or dash"],
+    ["[^abc]", "one character that is NOT a, b, or c"],
+    ["!", "Dash rule: in the middle of [ ] it means THROUGH. At the edge it is a plain dash."],
+    ["How many"],
+    ["x+", "one or more x"],
+    ["x*", "zero or more x"],
+    ["x?", "maybe one x"],
+    ["x{3}", "exactly 3 x"],
+    ["Groups and positions"],
+    ["( ... )", "SAVE this part (capture)"],
+    ["^", "start of the line"],
+    ["$", "end of the line"],
+    ["a|b", "a OR b"],
+  ],
+  python: [
+    ["Basics"],
+    ["x = 5", "put 5 in a box named x"],
+    ["==", "is it equal? (asking, not setting)"],
+    ["def f(a):", "make a reusable step named f that takes a"],
+    ["return v", "hand v back to whoever called this"],
+    ["if / elif / else", "if this... otherwise if that... otherwise"],
+    ["for r in rows:", "do this once for each item in rows, calling it r"],
+    ["Lists and lookups"],
+    ["m[0]", "first item in the list m"],
+    ["m[-1]", "last item in the list m"],
+    ["m[-5:]", "the last 5 items"],
+    ["r.get(\"name\")", "look up the value labeled name (nothing if missing)"],
+    ["sum(1 for r in rows if X)", "count the rows where X is true"],
+    ["Files, JSON, regex"],
+    ["open(p).read()", "open the file at p and read all its text"],
+    ["json.load(f)", "turn JSON text into Python lists and labels"],
+    ["re.findall(p, text)", "find every match of pattern p, return the saved parts"],
+    ["re.sub(p, new, text)", "replace matches of p with new"],
+    ["f\"{x}\"", "text with the value of x dropped in"],
+  ],
+  shell: [
+    ["Plumbing"],
+    ["a | b", "send a's output into b"],
+    ["a > f", "write a's output into file f (replaces it)"],
+    ["a >> f", "add a's output to the end of file f"],
+    ["a < f", "feed file f into a as its input"],
+    ["a && b", "run b only if a worked"],
+    ["a ; b", "run a, then b, no matter what"],
+    ["2>&1", "send errors to the same place as normal output"],
+    ["$?", "did the last command work? (0 = yes)"],
+    ["$(cmd)", "run cmd and use its output right here"],
+    ["Tools you've seen"],
+    ["grep -q \"x\"", "quietly check: does the text contain x?"],
+    ["wc -l", "count lines (Mac pads the number with spaces!)"],
+    ["printf 'a\\nb'", "print text, \\n = new line"],
+    ["sed 's/a/b/'", "swap a for b (Mac sed needs -i '' to edit files)"],
+    ["test -f x", "is there a file named x?"],
+    ["./prog", "run the program prog from this folder"],
+  ],
+  swift: [
+    ["Basics"],
+    ["let x = 5", "a box named x that can't change"],
+    ["var x = 5", "a box named x that CAN change"],
+    ["func f(_ a: Int) -> String", "a step f that takes a number, gives back text"],
+    ["guard X else { return }", "make sure X is true, otherwise leave now"],
+    ["if let v = maybe", "if maybe has a value, call it v and continue"],
+    ["x ?? y", "x if it has a value, otherwise y"],
+    ["\"\\(x)\"", "text with x dropped in (the backslash matters!)"],
+    ["Input and output"],
+    ["print(s)", "show s on the screen"],
+    ["readLine()", "read one line of input"],
+    ["FileHandle.standardInput .readDataToEndOfFile()", "read ALL of the input"],
+    ["Packages"],
+    ["swift build", "compile the package"],
+    ["swift run -q name", "build if needed, then run the program name"],
+    [".build/debug/name", "where the built program lives (note the dot!)"],
+  ],
+};
+
+let tab = "regex";
+try { tab = localStorage.getItem("mc-tab") || "regex"; } catch (e) {}
+const pb = document.getElementById("pb"), find = document.getElementById("find");
+function esc(s){ return s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function renderBook(){
+  document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.tab === tab)));
+  const q = find.value.trim().toLowerCase();
+  const rows = q ? Object.values(BOOK).flat() : BOOK[tab];
+  let html = "";
+  for (const r of rows) {
+    if (r.length === 1) { if (!q) html += `<div class="sec label">${esc(r[0])}</div>`; continue; }
+    if (r[0] === "!") { if (!q) html += `<div class="tip">${esc(r[1])}</div>`; continue; }
+    if (q && !(r[0].toLowerCase().includes(q) || r[1].toLowerCase().includes(q))) continue;
+    html += `<div class="row" tabindex="0" role="button" data-sym="${esc(r[0])}" data-say="${esc(r[1])}"><code>${esc(r[0])}</code><span>${esc(r[1])}</span></div>`;
+  }
+  pb.innerHTML = html || `<div class="empty">No match. Try a shorter search.</div>`;
+}
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => {
+  tab = b.dataset.tab; find.value = ""; try { localStorage.setItem("mc-tab", tab); } catch (e) {} renderBook();
+}));
+find.addEventListener("input", renderBook);
+function addMeaning(el){
+  const eng = document.getElementById("english");
+  const line = `${el.dataset.sym}  =  ${el.dataset.say}`;
+  eng.value = eng.value ? eng.value.replace(/\s*$/, "") + "\n" + line : line;
+  eng.dispatchEvent(new Event("input"));
+}
+pb.addEventListener("click", e => { const r = e.target.closest(".row"); if (r) addMeaning(r); });
+pb.addEventListener("keydown", e => { const r = e.target.closest(".row"); if (r && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); addMeaning(r); } });
+renderBook();
+
+/* ---- notepad: saved in this browser (localStorage). Export/Import moves notes between devices. ---- */
+const $ = id => document.getElementById(id);
+const statusEl = $("status");
+function setStatus(t, cls){ statusEl.textContent = t; statusEl.className = "status" + (cls ? " " + cls : ""); }
+const KEY = "memory-cell-notes-v1";
+const fields = ["title","code","english","logic"];
+const EXAMPLE = {
+  id: "example", title: "Example: why a task name went missing",
+  code: 'm = re.findall(r"── (\\d\\d-[a-z0-9]+): solving", log)',
+  english: "re.findall  =  find every match, return the saved parts\n( ... )  =  SAVE this part\n\\d\\d  =  two digits\n-  =  one plain dash\n[a-z0-9]+  =  one or more lowercase letters or digits (NO dash)\n: solving  =  then exactly ': solving'\n\nWhole line: save two digits, a dash, then letters/digits only, then ': solving'.",
+  logic: "Real line: ── 12-textstats-pkg: solving\nThe brackets read 'textstats', hit the second dash and stop. The pattern then needs ': solving' but sees '-pkg'. No match, so the task is skipped without any error.\n\nFix: let the brackets accept a dash: [a-z0-9-]+ (a dash at the EDGE of [ ] is a plain dash; in the middle it means THROUGH).",
+  createdAt: Date.now(), updatedAt: Date.now()
+};
+let notes = [], current = null, dirty = false, canStore = true;
+function load(){ try { const v = localStorage.getItem(KEY); notes = v ? JSON.parse(v) : [EXAMPLE]; } catch (e) { canStore = false; notes = [EXAMPLE]; } }
+function persist(){ try { localStorage.setItem(KEY, JSON.stringify(notes)); return true; } catch (e) { canStore = false; return false; } }
+function sorted(){ return notes.slice().sort((a,b) => (b.updatedAt||0) - (a.updatedAt||0)); }
+function fill(n){ for (const f of fields) $(f).value = (n && n[f]) || ""; dirty = false; $("confirm").hidden = true; }
+function renderList(){
+  const list = $("list");
+  if (!notes.length) { list.innerHTML = `<div class="empty">Your notes will show up here. Press “New note” to start your first one.</div>`; return; }
+  list.innerHTML = sorted().map(n => `<button type="button" class="item" data-id="${esc(n.id)}" aria-current="${n.id === current}">${esc(n.title || "Untitled")}<small>${esc(n.updatedAt ? new Date(n.updatedAt).toLocaleDateString() : "")}</small></button>`).join("");
+}
+$("list").addEventListener("click", e => { const b = e.target.closest(".item"); if (!b) return; if (dirty) save(); current = b.dataset.id; fill(notes.find(n => n.id === current)); renderList(); });
+let t = null;
+fields.forEach(f => $(f).addEventListener("input", () => { dirty = true; setStatus("Saving…"); clearTimeout(t); t = setTimeout(save, 600); }));
+function save(){
+  if (!dirty) return;
+  const body = {}; for (const f of fields) body[f] = $(f).value;
+  const now = Date.now();
+  if (current) { Object.assign(notes.find(n => n.id === current) || {}, body, { updatedAt: now }); }
+  else { current = "n" + now.toString(36) + Math.random().toString(36).slice(2,6); notes.push(Object.assign({ id: current, createdAt: now, updatedAt: now }, body)); }
+  dirty = false;
+  if (persist()) setStatus("Saved in this browser", "ok"); else setStatus("This browser blocks saving. Use Export before you close the page", "warn");
+  renderList();
+}
+$("save").addEventListener("click", () => { dirty = true; save(); });
+document.addEventListener("keydown", e => { if ((e.metaKey || e.ctrlKey) && e.key === "s") { e.preventDefault(); dirty = true; save(); } });
+$("new").addEventListener("click", () => { if (dirty) save(); current = null; fill(null); renderList(); $("title").focus(); setStatus("New note"); });
+let armed = false;
+$("del").addEventListener("click", () => {
+  if (!current) return;
+  if (!armed) { armed = true; $("confirm").hidden = false; setTimeout(() => { armed = false; $("confirm").hidden = true; }, 4000); return; }
+  armed = false; notes = notes.filter(n => n.id !== current); persist(); current = null; fill(null); renderList(); setStatus("Deleted");
+});
+$("export").addEventListener("click", () => {
+  if (dirty) save();
+  const blob = new Blob([JSON.stringify({ app: "memory-cell", version: 1, notes }, null, 2)], { type: "application/json" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+  a.download = "memory-cell-notes-" + new Date().toISOString().slice(0,10) + ".json"; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); setStatus("Exported", "ok");
+});
+$("import").addEventListener("change", async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const data = JSON.parse(await f.text()); const inc = Array.isArray(data) ? data : data.notes;
+    if (!Array.isArray(inc)) throw new Error("no notes in that file");
+    let added = 0;
+    for (const n of inc) { if (!n || typeof n !== "object") continue; const clean = { id: String(n.id || ("n" + Math.random().toString(36).slice(2))), createdAt: +n.createdAt || Date.now(), updatedAt: +n.updatedAt || Date.now() }; for (const k of fields) clean[k] = String(n[k] || ""); const i = notes.findIndex(x => x.id === clean.id); if (i >= 0) notes[i] = clean; else notes.push(clean); added++; }
+    persist(); renderList(); setStatus(`Imported ${added} note${added === 1 ? "" : "s"}`, "ok");
+  } catch (err) { setStatus("Couldn't import: " + err.message, "warn"); }
+  e.target.value = "";
+});
+load(); const first = sorted()[0]; if (first) { current = first.id; fill(first); } renderList();
+if (!canStore) setStatus("This browser blocks saving. Use Export before you close the page", "warn");
+</script>
+</body>
+</html>

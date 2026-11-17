@@ -217,3 +217,8 @@ Swift · Metal · [MLX](https://github.com/ml-explore/mlx) / [mlx-swift](https:/
 [Qwen](https://huggingface.co/Qwen) models (Apache 2.0)
 
 Designed by me; built with [Claude Code](https://claude.com/claude-code) as my coding partner. **[How this is built](HOW-ITS-BUILT.md)** explains who does what.
+
+## 📓 Memory Cell (study tool)
+
+A free two-pass notepad for learning to read code: translate every symbol into plain English first, then reason. Built-in phrasebook for regex, Python, shell and Swift; notes stay in your own browser.
+**[Open it](https://nightguard-labs.github.io/memory-cell.html)** · [how to use it](memory-cell/README.md)
