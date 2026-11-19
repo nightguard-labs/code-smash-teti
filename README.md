@@ -7,6 +7,7 @@ streamed from the SSD. Native Swift + Metal, built on [MLX](https://github.com/m
 <p>
 <b>📖 Docs:</b>
 <a href="#table-of-contents">Contents</a> ·
+<a href="TITAN-AND-FRONTIER.md">🆕 Titan + frontier test</a> ·
 <a href="LLM-OPTIMIZATION.md">LLM optimization</a> ·
 <a href="ARCHITECTURE.md">Architecture</a> ·
 <a href="PROGRESS.md">Progress</a> ·
@@ -222,3 +223,12 @@ Designed by me; built with [Claude Code](https://claude.com/claude-code) as my c
 
 A free two-pass notepad for learning to read code: translate every symbol into plain English first, then reason. Built-in phrasebook for regex, Python, shell and Swift; notes stay in your own browser.
 **[Open it](https://nightguard-labs.github.io/memory-cell.html)** · [how to use it](memory-cell/README.md)
+
+## More from nightguard labs
+
+| Repo | What it is |
+|---|---|
+| [**battle-ai**](https://github.com/nightguard-labs/battle-ai) | Local models hack each other in a no-network Docker box; code keeps score |
+| [learning-to-code](https://github.com/nightguard-labs/learning-to-code) | Learning Python from scratch, every mistake included |
+| [bacteria](https://github.com/nightguard-labs/bacteria) | Eats duplicate memories in an AI agent's knowledge bank. One Python file |
+| [listen-in](https://github.com/nightguard-labs/listen-in) | Tap your iPhone or Watch, get a plain recap of a conversation, written on your own Mac |
